@@ -15,11 +15,16 @@ export const authenticateToken = async (req, res, next) => {
       });
     }
 
+    // Decode the JWT
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    // IMPORTANT: JWT payload should match what you created in login/register
+    // If you used { id: user.id } then decode.id is correct
+    const userId = decoded.id; // <-- Saxan halkan
 
     // Verify user still exists in database
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
+      where: { id: userId },
       select: { id: true, email: true, name: true },
     });
 
@@ -50,6 +55,7 @@ export const authenticateToken = async (req, res, next) => {
     return res.status(500).json({
       success: false,
       message: "Authentication error",
+      error: error.message,
     });
   }
 };
